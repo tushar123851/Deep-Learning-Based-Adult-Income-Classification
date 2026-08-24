@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Adult Income ANN portfolio — seven deep-learning experiments by Tushar Vala.">
+  <meta name="theme-color" content="#070818">
+  <title>Adult Income ANN | Deep Learning PR 2</title>
+  <style>
+    :root {
+      --bg: #070818;
+      --bg-soft: #0c1027;
+      --panel: rgba(18, 22, 52, .78);
+      --panel-solid: #121634;
+      --text: #f7f8ff;
+      --muted: #aeb5d5;
+      --line: rgba(255, 255, 255, .09);
+      --coral: #ff5c70;
+      --orange: #ff9d4d;
+      --cyan: #38d9ff;
+      --mint: #47e6a8;
+      --purple: #a983ff;
+      --yellow: #ffd166;
+      --shadow: 0 24px 80px rgba(0, 0, 0, .28);
+      --radius: 24px;
+    }
+
+    body.light {
+      --bg: #f4f6ff;
+      --bg-soft: #e9edff;
+      --panel: rgba(255, 255, 255, .86);
+      --panel-solid: #ffffff;
+      --text: #14162b;
+      --muted: #5c6383;
+      --line: rgba(20, 22, 43, .1);
+      --shadow: 0 24px 70px rgba(49, 55, 105, .13);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background:
+        radial-gradient(circle at 12% 5%, rgba(169, 131, 255, .18), transparent 30%),
+        radial-gradient(circle at 92% 22%, rgba(56, 217, 255, .12), transparent 28%),
+        var(--bg);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.6;
+      overflow-x: hidden;
+      transition: background .3s ease, color .3s ease;
+    }
+
+    a { color: inherit; text-decoration: none; }
+    button { font: inherit; }
+    ::selection { background: var(--coral); color: white; }
+
+    .progress {
+      position: fixed;
+      z-index: 1000;
+      top: 0;
+      left: 0;
+      height: 3px;
+      width: 0;
+      background: linear-gradient(90deg, var(--coral), var(--orange), var(--cyan));
+    }
+
+    .nav {
+      position: fixed;
+      z-index: 100;
+      top: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: min(1120px, calc(100% - 28px));
+      min-height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 10px 14px 10px 20px;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: color-mix(in srgb, var(--bg) 74%, transparent);
+      backdrop-filter: blur(18px);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, .18);
+    }
+
+    .brand { display: flex; align-items: center; gap: 11px; font-weight: 800; }
+    .brand-mark {
+      width: 40px;
+      height: 40px;
+      display: grid;
+      place-items: center;
+      border-radius: 13px;
+      background: linear-gradient(135deg, var(--coral), var(--purple));
+      color: white;
+      box-shadow: 0 8px 24px rgba(255, 92, 112, .25);
+    }
+
+    .nav-links { display: flex; align-items: center; gap: 22px; }
+    .nav-links a { color: var(--muted); font-size: .88rem; font-weight: 650; transition: .2s ease; }
+    .nav-links a:hover { color: var(--text); }
+    .nav-actions { display: flex; gap: 8px; }
+    .icon-button {
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      background: var(--panel);
+      color: var(--text);
+      cursor: pointer;
+    }
+    .menu-button { display: none; }
+
+    .container { width: min(1120px, calc(100% - 36px)); margin: 0 auto; }
+    section { padding: 100px 0; scroll-margin-top: 80px; }
+
+    .hero {
+      min-height: 100vh;
+      display: grid;
+      align-items: center;
+      padding-top: 130px;
+      position: relative;
+    }
+
+    .hero-grid { display: grid; grid-template-columns: 1.15fr .85fr; align-items: center; gap: 58px; }
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      padding: 8px 13px;
+      border: 1px solid rgba(71, 230, 168, .28);
+      border-radius: 999px;
+      color: var(--mint);
+      background: rgba(71, 230, 168, .07);
+      font-size: .78rem;
+      font-weight: 800;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+    .pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--mint); box-shadow: 0 0 0 0 rgba(71,230,168,.6); animation: pulse 2s infinite; }
+    @keyframes pulse { 70% { box-shadow: 0 0 0 10px rgba(71,230,168,0); } }
+
+    h1 {
+      margin: 24px 0 20px;
+      font-size: clamp(3.3rem, 7.5vw, 6.8rem);
+      line-height: .94;
+      letter-spacing: -.065em;
+      max-width: 800px;
+    }
+    .gradient-text {
+      display: block;
+      color: transparent;
+      background: linear-gradient(100deg, var(--coral), var(--orange) 36%, var(--cyan) 78%);
+      background-clip: text;
+      -webkit-background-clip: text;
+    }
+    .hero-copy { max-width: 690px; color: var(--muted); font-size: 1.08rem; }
+    .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 30px; }
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      min-height: 50px;
+      padding: 0 20px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      font-weight: 800;
+      transition: transform .2s ease, box-shadow .2s ease;
+    }
+    .button:hover { transform: translateY(-2px); }
+    .button.primary { color: white; border: 0; background: linear-gradient(135deg, var(--coral), #ff7659); box-shadow: 0 14px 35px rgba(255, 92, 112, .24); }
+    .button.secondary { background: var(--panel); }
+
+    .hero-card {
+      position: relative;
+      min-height: 475px;
+      padding: 28px;
+      border: 1px solid var(--line);
+      border-radius: 34px;
+      background: linear-gradient(145deg, rgba(169,131,255,.14), rgba(56,217,255,.04)), var(--panel);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .hero-card::before {
+      content: "";
+      position: absolute;
+      width: 240px;
+      height: 240px;
+      right: -80px;
+      top: -90px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(56,217,255,.32), transparent 68%);
+    }
+    .network { position: relative; height: 280px; display: grid; grid-template-columns: repeat(4,1fr); align-items: center; gap: 26px; }
+    .layer { position: relative; display: grid; place-items: center; gap: 18px; z-index: 2; }
+    .node { width: 18px; height: 18px; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 22px rgba(56,217,255,.65); animation: breathe 2.5s ease-in-out infinite alternate; }
+    .layer:nth-child(2) .node { background: var(--purple); box-shadow: 0 0 22px rgba(169,131,255,.58); }
+    .layer:nth-child(3) .node { background: var(--orange); box-shadow: 0 0 22px rgba(255,157,77,.58); }
+    .layer:nth-child(4) .node { width: 28px; height: 28px; background: var(--mint); box-shadow: 0 0 28px rgba(71,230,168,.65); }
+    @keyframes breathe { to { transform: scale(1.25); filter: brightness(1.2); } }
+    .layer-label { color: var(--muted); font-size: .72rem; font-weight: 750; text-align: center; }
+    .model-winner {
+      position: relative;
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 22px;
+      border: 1px solid rgba(255,209,102,.22);
+      border-radius: 20px;
+      background: rgba(255,209,102,.06);
+    }
+    .model-winner span { display: block; color: var(--muted); font-size: .75rem; text-transform: uppercase; letter-spacing: .1em; font-weight: 800; }
+    .model-winner strong { display: block; margin-top: 5px; font-size: 1.08rem; }
+    .winner-score { text-align: right; color: var(--yellow); font-size: 1.55rem !important; }
+
+    .trust-strip { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 42px; }
+    .chip { padding: 8px 12px; border: 1px solid var(--line); border-radius: 999px; color: var(--muted); background: var(--panel); font-size: .78rem; font-weight: 750; }
+
+    .section-head { display: flex; align-items: end; justify-content: space-between; gap: 30px; margin-bottom: 42px; }
+    .section-kicker { color: var(--coral); font-size: .78rem; letter-spacing: .14em; text-transform: uppercase; font-weight: 850; }
+    h2 { margin: 8px 0 0; font-size: clamp(2.1rem, 4.5vw, 4rem); line-height: 1.05; letter-spacing: -.045em; }
+    .section-intro { max-width: 520px; color: var(--muted); }
+
+    .metrics { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; }
+    .metric-card, .glass-card {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(12px);
+    }
+    .metric-card { padding: 24px 18px; position: relative; overflow: hidden; }
+    .metric-card::after { content: ""; position: absolute; left: 0; bottom: 0; width: 100%; height: 3px; background: var(--tone); }
+    .metric-card .label { color: var(--muted); font-size: .78rem; font-weight: 750; }
+    .metric-card .value { margin-top: 8px; font-size: clamp(1.7rem, 3vw, 2.5rem); font-weight: 900; letter-spacing: -.045em; }
+    .metric-card .note { margin-top: 4px; color: var(--tone); font-size: .74rem; font-weight: 800; }
+
+    .overview-grid { display: grid; grid-template-columns: .9fr 1.1fr; gap: 18px; }
+    .glass-card { padding: 30px; }
+    .card-title { margin: 0 0 18px; font-size: 1.1rem; }
+    .dataset-list { display: grid; gap: 2px; }
+    .dataset-row { display: flex; justify-content: space-between; gap: 20px; padding: 13px 0; border-bottom: 1px solid var(--line); }
+    .dataset-row:last-child { border: 0; }
+    .dataset-row span { color: var(--muted); }
+
+    .pipeline { display: grid; gap: 11px; }
+    .pipe-step { display: grid; grid-template-columns: 42px 1fr; align-items: center; gap: 12px; padding: 12px; border: 1px solid var(--line); border-radius: 15px; background: rgba(255,255,255,.025); }
+    .step-no { width: 40px; height: 40px; display: grid; place-items: center; border-radius: 12px; background: linear-gradient(135deg, rgba(255,92,112,.18), rgba(169,131,255,.2)); color: var(--coral); font-weight: 900; }
+    .pipe-step strong { display: block; font-size: .9rem; }
+    .pipe-step small { color: var(--muted); }
+
+    .experiment-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+    .experiment { padding: 26px; border: 1px solid var(--line); border-radius: 22px; background: var(--panel); transition: .25s ease; }
+    .experiment:hover { transform: translateY(-5px); border-color: color-mix(in srgb, var(--tone) 50%, var(--line)); }
+    .experiment-top { display: flex; align-items: center; justify-content: space-between; gap: 15px; }
+    .task-no { color: var(--tone); font-size: .75rem; text-transform: uppercase; letter-spacing: .14em; font-weight: 900; }
+    .task-icon { width: 45px; height: 45px; display: grid; place-items: center; border-radius: 14px; background: color-mix(in srgb, var(--tone) 13%, transparent); font-size: 1.25rem; }
+    .experiment h3 { margin: 17px 0 8px; font-size: 1.2rem; }
+    .experiment p { margin: 0; color: var(--muted); font-size: .9rem; }
+    .experiment-tags { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 18px; }
+    .experiment-tags span { padding: 5px 9px; border-radius: 999px; color: var(--muted); background: rgba(255,255,255,.05); font-size: .68rem; font-weight: 750; }
+
+    .winner-layout { display: grid; grid-template-columns: .85fr 1.15fr; gap: 18px; }
+    .winner-panel { position: relative; overflow: hidden; background: linear-gradient(145deg, rgba(255,92,112,.16), rgba(169,131,255,.10)), var(--panel); }
+    .trophy { font-size: 3.7rem; }
+    .winner-panel h3 { margin: 12px 0; font-size: 2rem; letter-spacing: -.04em; }
+    .stack-list { display: flex; flex-wrap: wrap; gap: 8px; margin: 20px 0; }
+    .stack-list span { padding: 8px 11px; border: 1px solid var(--line); border-radius: 10px; background: rgba(255,255,255,.04); font-size: .75rem; font-weight: 800; }
+
+    .chart { display: grid; gap: 16px; }
+    .chart-row { display: grid; grid-template-columns: 138px 1fr 58px; align-items: center; gap: 12px; }
+    .chart-label { color: var(--muted); font-size: .78rem; font-weight: 750; }
+    .track { height: 12px; border-radius: 999px; background: rgba(255,255,255,.06); overflow: hidden; }
+    .bar { height: 100%; width: 0; border-radius: inherit; background: linear-gradient(90deg, var(--coral), var(--orange)); transition: width 1.35s cubic-bezier(.2,.8,.2,1); }
+    .chart-row:nth-child(2) .bar { background: linear-gradient(90deg, var(--purple), var(--cyan)); }
+    .chart-row:nth-child(3) .bar { background: linear-gradient(90deg, var(--orange), var(--yellow)); }
+    .chart-row:nth-child(4) .bar { background: linear-gradient(90deg, var(--coral), var(--purple)); }
+    .chart-row:nth-child(5) .bar { background: linear-gradient(90deg, var(--cyan), var(--mint)); }
+    .chart-value { font-weight: 900; font-size: .82rem; text-align: right; }
+
+    .results-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 14px; margin-bottom: 18px; }
+    .filter-group { display: flex; flex-wrap: wrap; gap: 8px; }
+    .filter-btn { padding: 8px 12px; border: 1px solid var(--line); border-radius: 10px; color: var(--muted); background: transparent; cursor: pointer; font-weight: 750; font-size: .76rem; }
+    .filter-btn.active { color: white; border-color: transparent; background: linear-gradient(135deg, var(--coral), #ff7659); }
+    .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 20px; }
+    table { width: 100%; border-collapse: collapse; min-width: 920px; background: var(--panel); }
+    th, td { padding: 16px 14px; text-align: left; border-bottom: 1px solid var(--line); font-size: .8rem; white-space: nowrap; }
+    th { color: var(--muted); background: rgba(255,255,255,.025); text-transform: uppercase; letter-spacing: .07em; font-size: .68rem; }
+    tr:last-child td { border: 0; }
+    tbody tr { transition: background .2s ease; }
+    tbody tr:hover { background: rgba(255,255,255,.035); }
+    .rank { width: 30px; height: 30px; display: grid; place-items: center; border-radius: 10px; background: rgba(255,255,255,.06); font-weight: 900; }
+    .best-row { background: rgba(71,230,168,.055); }
+    .score-good { color: var(--mint); font-weight: 900; }
+    .score-warn { color: var(--yellow); font-weight: 900; }
+
+    .insights-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
+    .insight { padding: 24px; border: 1px solid var(--line); border-radius: 20px; background: var(--panel); }
+    .insight-number { color: var(--tone); font-size: 2.3rem; font-weight: 950; letter-spacing: -.06em; }
+    .insight h3 { margin: 7px 0; font-size: 1rem; }
+    .insight p { margin: 0; color: var(--muted); font-size: .84rem; }
+
+    .recommendation { padding: 38px; display: grid; grid-template-columns: 1.2fr .8fr; gap: 28px; align-items: center; background: linear-gradient(120deg, rgba(56,217,255,.09), rgba(169,131,255,.12), rgba(255,92,112,.08)), var(--panel); }
+    .recommendation h3 { margin: 0 0 12px; font-size: clamp(1.8rem, 4vw, 3rem); letter-spacing: -.045em; }
+    .recommendation p { color: var(--muted); }
+    .decision-list { display: grid; gap: 10px; }
+    .decision { padding: 15px; border: 1px solid var(--line); border-radius: 15px; background: rgba(255,255,255,.035); }
+    .decision strong { display: block; color: var(--mint); }
+    .decision small { color: var(--muted); }
+
+    .code-box { position: relative; border: 1px solid var(--line); border-radius: 20px; background: #050612; overflow: hidden; }
+    .code-top { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,.08); color: #aeb5d5; font-size: .75rem; }
+    .dots { display: flex; gap: 6px; }
+    .dots i { width: 9px; height: 9px; border-radius: 50%; background: var(--coral); }
+    .dots i:nth-child(2) { background: var(--yellow); }
+    .dots i:nth-child(3) { background: var(--mint); }
+    pre { margin: 0; padding: 22px; overflow-x: auto; color: #dbe2ff; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .79rem; line-height: 1.75; }
+    .code-key { color: #ff7f96; } .code-fn { color: #5ee5ff; } .code-str { color: #ffd166; }
+
+    .author-card { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 22px; padding: 30px; }
+    .avatar { width: 84px; height: 84px; display: grid; place-items: center; border-radius: 24px; color: white; background: linear-gradient(135deg, var(--coral), var(--purple)); font-size: 1.7rem; font-weight: 950; box-shadow: 0 14px 35px rgba(169,131,255,.25); }
+    .author-card h3 { margin: 0; font-size: 1.4rem; }
+    .author-card p { margin: 5px 0 0; color: var(--muted); }
+    .socials { display: flex; gap: 8px; }
+
+    footer { padding: 38px 0 46px; border-top: 1px solid var(--line); color: var(--muted); }
+    .footer-row { display: flex; justify-content: space-between; gap: 20px; align-items: center; }
+
+    .reveal { opacity: 0; transform: translateY(22px); transition: opacity .65s ease, transform .65s ease; }
+    .reveal.visible { opacity: 1; transform: none; }
+
+    .back-top { position: fixed; right: 20px; bottom: 20px; width: 46px; height: 46px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 14px; background: var(--panel-solid); color: var(--text); box-shadow: var(--shadow); cursor: pointer; opacity: 0; pointer-events: none; transform: translateY(10px); transition: .25s ease; }
+    .back-top.show { opacity: 1; pointer-events: auto; transform: none; }
+
+    @media (max-width: 940px) {
+      .nav-links { display: none; position: absolute; top: 72px; left: 0; right: 0; padding: 18px; flex-direction: column; align-items: stretch; border: 1px solid var(--line); border-radius: 18px; background: var(--panel-solid); box-shadow: var(--shadow); }
+      .nav-links.open { display: flex; }
+      .menu-button { display: grid; }
+      .hero-grid, .overview-grid, .winner-layout, .recommendation { grid-template-columns: 1fr; }
+      .hero-card { min-height: 420px; }
+      .metrics { grid-template-columns: repeat(3, 1fr); }
+      .insights-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 650px) {
+      section { padding: 74px 0; }
+      .hero { padding-top: 120px; }
+      h1 { font-size: 3.35rem; }
+      .hero-grid { gap: 34px; }
+      .hero-card { min-height: 390px; padding: 20px; }
+      .network { height: 245px; gap: 10px; }
+      .metrics { grid-template-columns: repeat(2, 1fr); }
+      .metric-card:last-child { grid-column: 1 / -1; }
+      .experiment-grid, .insights-grid { grid-template-columns: 1fr; }
+      .section-head, .results-toolbar, .footer-row { align-items: flex-start; flex-direction: column; }
+      .chart-row { grid-template-columns: 95px 1fr 50px; }
+      .author-card { grid-template-columns: auto 1fr; }
+      .author-card .socials { grid-column: 1 / -1; }
+      .brand-text { display: none; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="progress" id="progress"></div>
+
+  <nav class="nav" aria-label="Primary navigation">
+    <a class="brand" href="#home" aria-label="Adult Income ANN home">
+      <span class="brand-mark">AI</span>
+      <span class="brand-text">Adult Income ANN</span>
+    </a>
+    <div class="nav-links" id="navLinks">
+      <a href="#overview">Overview</a>
+      <a href="#experiments">Experiments</a>
+      <a href="#results">Results</a>
+      <a href="#insights">Insights</a>
+      <a href="#author">Author</a>
+    </div>
+    <div class="nav-actions">
+      <button class="icon-button" id="themeToggle" aria-label="Toggle light and dark theme">☀</button>
+      <button class="icon-button menu-button" id="menuToggle" aria-label="Open navigation menu">☰</button>
+    </div>
+  </nav>
+
+  <main>
+    <section class="hero" id="home">
+      <div class="container hero-grid">
+        <div>
+          <span class="eyebrow"><i class="pulse"></i> Deep Learning PR 2 • Completed</span>
+          <h1>Adult Income <span class="gradient-text">ANN Lab.</span></h1>
+          <p class="hero-copy">A controlled deep-learning study that tests activation functions, initializers, loss functions, Batch Normalization and optimizers to predict whether annual income exceeds $50K.</p>
+          <div class="hero-actions">
+            <a class="button primary" href="#results">Explore results <span>↗</span></a>
+            <a class="button secondary" href="#experiments">View 7 experiments <span>↓</span></a>
+          </div>
+          <div class="trust-strip">
+            <span class="chip">Python 3.11</span><span class="chip">TensorFlow</span><span class="chip">Keras</span><span class="chip">scikit-learn</span><span class="chip">48,842 records</span>
+          </div>
+        </div>
+
+        <div class="hero-card" aria-label="Animated neural network summary">
+          <div class="network">
+            <div class="layer"><span class="node"></span><span class="node"></span><span class="node"></span><small class="layer-label">Encoded<br>features</small></div>
+            <div class="layer"><span class="node"></span><span class="node"></span><span class="node"></span><span class="node"></span><small class="layer-label">Dense<br>128 ELU</small></div>
+            <div class="layer"><span class="node"></span><span class="node"></span><span class="node"></span><small class="layer-label">Dense<br>64 ELU</small></div>
+            <div class="layer"><span class="node"></span><small class="layer-label">Sigmoid<br>probability</small></div>
+          </div>
+          <div class="model-winner">
+            <div><span>Winning configuration</span><strong>ELU + Glorot Uniform + Adam</strong></div>
+            <div><span>ROC-AUC</span><strong class="winner-score">90.68%</strong></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="overview">
+      <div class="container">
+        <div class="section-head reveal">
+          <div><span class="section-kicker">01 • Project snapshot</span><h2>More than an accuracy score.</h2></div>
+          <p class="section-intro">The dataset is imbalanced, so success is measured using a complete metric set—with special attention to the minority class representing income above $50K.</p>
+        </div>
+
+        <div class="metrics reveal">
+          <article class="metric-card" style="--tone:var(--cyan)"><div class="label">Test accuracy</div><div class="value counter" data-value="85.20">0%</div><div class="note">Best overall</div></article>
+          <article class="metric-card" style="--tone:var(--purple)"><div class="label">Precision • Class 1</div><div class="value counter" data-value="73.29">0%</div><div class="note">ELU model</div></article>
+          <article class="metric-card" style="--tone:var(--orange)"><div class="label">Recall • Class 1</div><div class="value counter" data-value="63.38">0%</div><div class="note">Balanced choice</div></article>
+          <article class="metric-card" style="--tone:var(--coral)"><div class="label">F1 • Class 1</div><div class="value counter" data-value="67.97">0%</div><div class="note">Highest tested</div></article>
+          <article class="metric-card" style="--tone:var(--mint)"><div class="label">ROC-AUC</div><div class="value counter" data-value="90.68">0%</div><div class="note">Strong separation</div></article>
+        </div>
+
+        <div class="overview-grid" style="margin-top:18px">
+          <article class="glass-card reveal">
+            <h3 class="card-title">Dataset profile</h3>
+            <div class="dataset-list">
+              <div class="dataset-row"><span>Source</span><strong>UCI Adult Census</strong></div>
+              <div class="dataset-row"><span>Original records</span><strong>48,842</strong></div>
+              <div class="dataset-row"><span>Input features</span><strong>14</strong></div>
+              <div class="dataset-row"><span>Target</span><strong>Income</strong></div>
+              <div class="dataset-row"><span>Majority class</span><strong>≈75% • ≤50K</strong></div>
+              <div class="dataset-row"><span>Minority class</span><strong>≈25% • &gt;50K</strong></div>
+            </div>
+          </article>
+          <article class="glass-card reveal">
+            <h3 class="card-title">Preprocessing pipeline</h3>
+            <div class="pipeline">
+              <div class="pipe-step"><span class="step-no">01</span><div><strong>Clean categorical values</strong><small>Strip whitespace and replace “?” with NaN</small></div></div>
+              <div class="pipe-step"><span class="step-no">02</span><div><strong>Remove incomplete records</strong><small>Avoid mode-driven categorical distortion</small></div></div>
+              <div class="pipe-step"><span class="step-no">03</span><div><strong>Drop redundant features</strong><small>Remove fnlwgt and text education</small></div></div>
+              <div class="pipe-step"><span class="step-no">04</span><div><strong>Encode and standardize</strong><small>One-hot categoricals; scale numerics only</small></div></div>
+              <div class="pipe-step"><span class="step-no">05</span><div><strong>Stratified 80/20 split</strong><small>Preserve class balance in train and test</small></div></div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="experiments">
+      <div class="container">
+        <div class="section-head reveal">
+          <div><span class="section-kicker">02 • Method</span><h2>Seven controlled experiments.</h2></div>
+          <p class="section-intro">Each task isolates a design decision, explains why it matters and evaluates it using consistent data and business-relevant metrics.</p>
+        </div>
+        <div class="experiment-grid">
+          <article class="experiment reveal" style="--tone:var(--cyan)"><div class="experiment-top"><span class="task-no">Task 01</span><span class="task-icon">⌁</span></div><h3>Cleaning & EDA</h3><p>Prepared 48K+ census records, explored imbalance and studied demographic patterns.</p><div class="experiment-tags"><span>Missing values</span><span>OHE</span><span>Scaling</span><span>EDA</span></div></article>
+          <article class="experiment reveal" style="--tone:var(--purple)"><div class="experiment-top"><span class="task-no">Task 02</span><span class="task-icon">◈</span></div><h3>Baseline MLP</h3><p>Built a reusable 128 → 64 → 1 architecture and established a full metric baseline.</p><div class="experiment-tags"><span>ReLU</span><span>Sigmoid</span><span>BCE</span><span>Adam</span></div></article>
+          <article class="experiment reveal" style="--tone:var(--coral)"><div class="experiment-top"><span class="task-no">Task 03</span><span class="task-icon">ϟ</span></div><h3>Activation Functions</h3><p>Compared ReLU, Tanh, Sigmoid and ELU; inspected dead neurons and gradient flow.</p><div class="experiment-tags"><span>Dead neurons</span><span>GradientTape</span><span>ELU winner</span></div></article>
+          <article class="experiment reveal" style="--tone:var(--orange)"><div class="experiment-top"><span class="task-no">Task 04</span><span class="task-icon">◎</span></div><h3>Weight Initialization</h3><p>Measured convergence across Glorot, He and zero initialization strategies.</p><div class="experiment-tags"><span>Glorot</span><span>He</span><span>Symmetry</span><span>Weights</span></div></article>
+          <article class="experiment reveal" style="--tone:var(--yellow)"><div class="experiment-top"><span class="task-no">Task 05</span><span class="task-icon">∑</span></div><h3>Loss Functions</h3><p>Tested BCE, MSE, Weighted BCE and Focal Loss for imbalanced classification.</p><div class="experiment-tags"><span>BCE</span><span>Class weights</span><span>Focal Loss</span></div></article>
+          <article class="experiment reveal" style="--tone:var(--mint)"><div class="experiment-top"><span class="task-no">Task 06</span><span class="task-icon">≋</span></div><h3>Batch Normalization</h3><p>Compared training dynamics, normalization positions and learned gamma/beta values.</p><div class="experiment-tags"><span>BatchNorm</span><span>Gamma</span><span>Beta</span></div></article>
+          <article class="experiment reveal" style="--tone:var(--cyan);grid-column:1/-1"><div class="experiment-top"><span class="task-no">Task 07</span><span class="task-icon">↗</span></div><h3>Optimizers & Final Comparison</h3><p>Compared SGD, Momentum, RMSprop and Adam; tested learning-rate sensitivity and evaluated the final combined ANN.</p><div class="experiment-tags"><span>5 optimizers</span><span>7 learning rates</span><span>80-epoch final model</span><span>ROC-AUC</span></div></article>
+        </div>
+      </div>
+    </section>
+
+    <section id="winner">
+      <div class="container">
+        <div class="section-head reveal"><div><span class="section-kicker">03 • Winning model</span><h2>ELU takes the lead.</h2></div><p class="section-intro">The simplest balanced winner was not the final combined model. ELU with Glorot Uniform, BCE and Adam generalized best.</p></div>
+        <div class="winner-layout">
+          <article class="glass-card winner-panel reveal"><div class="trophy">🏆</div><h3>Best Activation — ELU</h3><p style="color:var(--muted)">Small negative outputs preserve gradient flow and reduce the dead-neuron risk seen with ReLU.</p><div class="stack-list"><span>ELU</span><span>Glorot Uniform</span><span>Binary Cross-Entropy</span><span>No BatchNorm</span><span>Adam</span></div><p><strong style="color:var(--mint)">Best balanced production candidate</strong></p></article>
+          <article class="glass-card reveal"><h3 class="card-title">Winning model performance</h3><div class="chart" id="winnerChart">
+            <div class="chart-row"><span class="chart-label">Accuracy</span><div class="track"><div class="bar" data-width="85.20"></div></div><span class="chart-value">85.20%</span></div>
+            <div class="chart-row"><span class="chart-label">Precision (1)</span><div class="track"><div class="bar" data-width="73.29"></div></div><span class="chart-value">73.29%</span></div>
+            <div class="chart-row"><span class="chart-label">Recall (1)</span><div class="track"><div class="bar" data-width="63.38"></div></div><span class="chart-value">63.38%</span></div>
+            <div class="chart-row"><span class="chart-label">F1 (1)</span><div class="track"><div class="bar" data-width="67.97"></div></div><span class="chart-value">67.97%</span></div>
+            <div class="chart-row"><span class="chart-label">ROC-AUC</span><div class="track"><div class="bar" data-width="90.68"></div></div><span class="chart-value">90.68%</span></div>
+          </div></article>
+        </div>
+      </div>
+    </section>
+
+    <section id="results">
+      <div class="container">
+        <div class="section-head reveal"><div><span class="section-kicker">04 • Benchmark</span><h2>Complete model leaderboard.</h2></div><p class="section-intro">Filter the table to focus on balanced performance, recall-heavy behavior or models using normalization.</p></div>
+        <div class="results-toolbar reveal"><div class="filter-group" role="group" aria-label="Filter model results"><button class="filter-btn active" data-filter="all">All models</button><button class="filter-btn" data-filter="balanced">Top F1</button><button class="filter-btn" data-filter="recall">High recall</button><button class="filter-btn" data-filter="bn">BatchNorm</button></div><small style="color:var(--muted)">Values measured on the unseen test set</small></div>
+        <div class="table-wrap reveal">
+          <table>
+            <thead><tr><th>Rank</th><th>Model</th><th>Activation</th><th>Initializer</th><th>Loss</th><th>BN</th><th>Accuracy</th><th>Precision</th><th>Recall</th><th>F1</th><th>ROC-AUC</th></tr></thead>
+            <tbody id="resultRows">
+              <tr class="best-row" data-groups="all balanced"><td><span class="rank">1</span></td><td><strong>Best Activation — ELU</strong></td><td>ELU</td><td>Glorot Uniform</td><td>BCE</td><td>No</td><td class="score-good">85.20%</td><td>73.29%</td><td>63.38%</td><td class="score-good">67.97%</td><td class="score-good">90.68%</td></tr>
+              <tr data-groups="all balanced recall"><td><span class="rank">2</span></td><td><strong>Weighted BCE</strong></td><td>ReLU</td><td>He Normal</td><td>Weighted BCE</td><td>No</td><td>80.09%</td><td>56.91%</td><td class="score-warn">81.04%</td><td>66.86%</td><td>88.82%</td></tr>
+              <tr data-groups="all balanced"><td><span class="rank">3</span></td><td><strong>Baseline</strong></td><td>ReLU</td><td>Glorot Uniform</td><td>BCE</td><td>No</td><td>83.92%</td><td>69.31%</td><td>63.07%</td><td>66.04%</td><td>88.78%</td></tr>
+              <tr data-groups="all"><td><span class="rank">4</span></td><td><strong>Best Initializer</strong></td><td>ReLU</td><td>He Uniform</td><td>BCE</td><td>No</td><td>83.57%</td><td>70.15%</td><td>58.70%</td><td>63.91%</td><td>88.69%</td></tr>
+              <tr data-groups="all bn"><td><span class="rank">5</span></td><td><strong>BatchNorm</strong></td><td>ReLU</td><td>He Normal</td><td>BCE</td><td>Yes</td><td>81.95%</td><td>65.08%</td><td>58.61%</td><td>61.68%</td><td>87.25%</td></tr>
+              <tr data-groups="all bn"><td><span class="rank">6</span></td><td><strong>Final Combined</strong></td><td>ReLU</td><td>He Normal</td><td>Weighted BCE</td><td>Yes</td><td>80.73%</td><td>61.93%</td><td>57.76%</td><td>59.77%</td><td>86.24%</td></tr>
+              <tr data-groups="all"><td><span class="rank">7</span></td><td><strong>Focal Loss</strong></td><td>ReLU</td><td>He Normal</td><td>Focal Loss</td><td>No</td><td>82.76%</td><td class="score-warn">78.58%</td><td>41.88%</td><td>54.64%</td><td>88.07%</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="insights">
+      <div class="container">
+        <div class="section-head reveal"><div><span class="section-kicker">05 • Findings</span><h2>What the experiments revealed.</h2></div><p class="section-intro">Six practical lessons translate the notebook results into decisions a data-science team can use.</p></div>
+        <div class="insights-grid">
+          <article class="insight reveal" style="--tone:var(--coral)"><div class="insight-number">+1.93</div><h3>F1-point improvement</h3><p>Switching from baseline ReLU to ELU created the strongest balanced gain.</p></article>
+          <article class="insight reveal" style="--tone:var(--orange)"><div class="insight-number">81.04%</div><h3>Best minority Recall</h3><p>Weighted BCE captured more high-income cases but introduced more false positives.</p></article>
+          <article class="insight reveal" style="--tone:var(--purple)"><div class="insight-number">78.58%</div><h3>Highest Precision</h3><p>Focal Loss was cautious: precise positive predictions, but only 41.88% Recall.</p></article>
+          <article class="insight reveal" style="--tone:var(--cyan)"><div class="insight-number">−4.27</div><h3>BatchNorm F1 gap</h3><p>Normalization was unnecessary for this shallow network with standardized inputs.</p></article>
+          <article class="insight reveal" style="--tone:var(--mint)"><div class="insight-number">90.68%</div><h3>Strong ranking ability</h3><p>The winning ROC-AUC indicates reliable separation across probability thresholds.</p></article>
+          <article class="insight reveal" style="--tone:var(--yellow)"><div class="insight-number">≠</div><h3>More is not always better</h3><p>The combined model underperformed because individually useful techniques interact.</p></article>
+        </div>
+
+        <article class="glass-card recommendation reveal" style="margin-top:18px">
+          <div><span class="section-kicker">Decision framework</span><h3>Choose the model for the cost of the mistake.</h3><p>There is no universal winner without business context. The ELU model is the best balanced candidate. Weighted BCE is preferred when missing a true high-income case costs more than a false positive.</p></div>
+          <div class="decision-list"><div class="decision"><strong>Balanced production model</strong><small>Use ELU + Glorot Uniform + BCE + Adam</small></div><div class="decision"><strong>Recall-first campaign</strong><small>Use Weighted BCE and accept more false positives</small></div><div class="decision"><strong>Next optimization</strong><small>Tune the decision threshold using PR curves</small></div></div>
+        </article>
+      </div>
+    </section>
+
+    <section id="implementation">
+      <div class="container">
+        <div class="section-head reveal"><div><span class="section-kicker">06 • Implementation</span><h2>Winning architecture.</h2></div><p class="section-intro">A compact network produced the best generalization. The most complex configuration was not required.</p></div>
+        <div class="code-box reveal">
+          <div class="code-top"><div class="dots"><i></i><i></i><i></i></div><span>best_model.py</span><span>Python 3.11</span></div>
+          <pre><span class="code-key">from</span> tensorflow <span class="code-key">import</span> keras
+<span class="code-key">from</span> tensorflow.keras <span class="code-key">import</span> layers
+
+model = keras.Sequential([
+    layers.Input(shape=(X_train.shape[<span class="code-str">1</span>],)),
+    layers.Dense(<span class="code-str">128</span>, activation=<span class="code-str">"elu"</span>, kernel_initializer=<span class="code-str">"glorot_uniform"</span>),
+    layers.Dense(<span class="code-str">64</span>, activation=<span class="code-str">"elu"</span>, kernel_initializer=<span class="code-str">"glorot_uniform"</span>),
+    layers.Dense(<span class="code-str">1</span>, activation=<span class="code-str">"sigmoid"</span>)
+])
+
+model.<span class="code-fn">compile</span>(optimizer=<span class="code-str">"adam"</span>, loss=<span class="code-str">"binary_crossentropy"</span>, metrics=[<span class="code-str">"accuracy"</span>])
+history = model.<span class="code-fn">fit</span>(X_train, y_train, epochs=<span class="code-str">50</span>, batch_size=<span class="code-str">64</span>, validation_split=<span class="code-str">0.1</span>)</pre>
+        </div>
+      </div>
+    </section>
+
+    <section id="author">
+      <div class="container">
+        <div class="section-head reveal"><div><span class="section-kicker">07 • About</span><h2>Built with curiosity and evidence.</h2></div></div>
+        <article class="glass-card author-card reveal">
+          <div class="avatar">TV</div>
+          <div><h3>Tushar Vala</h3><p>Aspiring Data Analyst • Python Developer • AI/ML Enthusiast<br>B.Sc. Information Technology • Surat, Gujarat</p></div>
+          <div class="socials"><a class="button primary" href="https://linkedin.com/in/tushar-vala-1b7304252" target="_blank" rel="noreferrer">LinkedIn ↗</a></div>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <footer><div class="container footer-row"><span>© <span id="year"></span> Tushar Vala • Adult Income ANN</span><span>Made with Python, TensorFlow & evidence-driven experimentation.</span></div></footer>
+  <button class="back-top" id="backTop" aria-label="Back to top">↑</button>
+
+  <script>
+    const body = document.body;
+    const progress = document.getElementById('progress');
+    const backTop = document.getElementById('backTop');
+    const themeToggle = document.getElementById('themeToggle');
+    const menuToggle = document.getElementById('menuToggle');
+    const navLinks = document.getElementById('navLinks');
+
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    const savedTheme = localStorage.getItem('dl-pr2-theme');
+    if (savedTheme === 'light') body.classList.add('light');
+    themeToggle.textContent = body.classList.contains('light') ? '☾' : '☀';
+
+    themeToggle.addEventListener('click', () => {
+      body.classList.toggle('light');
+      const isLight = body.classList.contains('light');
+      themeToggle.textContent = isLight ? '☾' : '☀';
+      localStorage.setItem('dl-pr2-theme', isLight ? 'light' : 'dark');
+    });
+
+    menuToggle.addEventListener('click', () => navLinks.classList.toggle('open'));
+    navLinks.querySelectorAll('a').forEach(link => link.addEventListener('click', () => navLinks.classList.remove('open')));
+
+    window.addEventListener('scroll', () => {
+      const scrollable = document.documentElement.scrollHeight - window.innerHeight;
+      progress.style.width = `${scrollable > 0 ? (window.scrollY / scrollable) * 100 : 0}%`;
+      backTop.classList.toggle('show', window.scrollY > 650);
+    }, { passive: true });
+    backTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+    const revealObserver = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add('visible');
+        revealObserver.unobserve(entry.target);
+      });
+    }, { threshold: .12 });
+    document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+    const counterObserver = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        const el = entry.target;
+        const target = Number(el.dataset.value);
+        const start = performance.now();
+        const animate = now => {
+          const p = Math.min((now - start) / 1100, 1);
+          const eased = 1 - Math.pow(1 - p, 3);
+          el.textContent = `${(target * eased).toFixed(2)}%`;
+          if (p < 1) requestAnimationFrame(animate);
+        };
+        requestAnimationFrame(animate);
+        counterObserver.unobserve(el);
+      });
+    }, { threshold: .65 });
+    document.querySelectorAll('.counter').forEach(el => counterObserver.observe(el));
+
+    const chartObserver = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        entry.target.querySelectorAll('.bar').forEach(bar => bar.style.width = `${bar.dataset.width}%`);
+        chartObserver.unobserve(entry.target);
+      });
+    }, { threshold: .35 });
+    chartObserver.observe(document.getElementById('winnerChart'));
+
+    document.querySelectorAll('.filter-btn').forEach(button => {
+      button.addEventListener('click', () => {
+        document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+        button.classList.add('active');
+        const filter = button.dataset.filter;
+        document.querySelectorAll('#resultRows tr').forEach(row => {
+          const groups = row.dataset.groups.split(' ');
+          row.style.display = groups.includes(filter) ? '' : 'none';
+        });
+      });
+    });
+  </script>
+</body>
+</html>
