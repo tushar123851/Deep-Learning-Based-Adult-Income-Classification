@@ -28,7 +28,6 @@ Built by **Tushar Vala** as part of **Deep Learning PR 2** at Red & White Skill 
 [Project Overview](#-project-overview) •
 [Experiments](#-seven-controlled-experiments) •
 [Results](#-complete-results) •
-[Installation](#-installation-and-setup) •
 [Conclusion](#-final-conclusion)
 
 </div>
