@@ -1,0 +1,21 @@
+# Adult Income ANN - Deep Learning PR 2
+# Recommended Python version: 3.11.x
+
+# Deep learning
+tensorflow
+
+# Data processing and numerical computing
+pandas
+numpy
+
+# Machine learning and evaluation
+scikit-learn
+
+# Data visualization
+matplotlib
+seaborn
+
+# Jupyter Notebook environment
+jupyter
+notebook
+ipykernel
