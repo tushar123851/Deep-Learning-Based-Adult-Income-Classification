@@ -34,6 +34,31 @@ Built by **Tushar Vala** as part of **Deep Learning PR 2** at Red & White Skill 
 
 ---
 
+## 🎬 Project Demo Video
+
+<div align="center">
+
+### ▶ Watch the complete project explanation and model demonstration
+
+<a href="https://drive.google.com/file/d/1feAtb1iOCcXbmA5lU7mBEV0IZdopiDN3/view?usp=sharing" target="_blank">
+  <img src="https://img.shields.io/badge/▶%20WATCH%20PROJECT%20DEMO-Google%20Drive-4285F4?style=for-the-badge&logo=googledrive&logoColor=white" alt="Watch Project Demo">
+</a>
+
+<br><br>
+
+**Deep Learning PR 2 — Adult Income Classification using ANN**
+
+`Data Preprocessing` • `Activation Functions` • `Weight Initialization`  
+`Loss Functions` • `Batch Normalization` • `Optimizers`
+
+<br>
+
+📌 Click the button above to watch the complete project demonstration.
+
+</div>
+
+---
+
 ## 📌 Project Overview
 
 This project builds and evaluates Artificial Neural Networks to predict whether an individual's annual income is:
